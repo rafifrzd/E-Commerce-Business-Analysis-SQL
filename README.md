@@ -9,7 +9,7 @@
 
 ---
 
-## *Initial Stage: Background and Objective*
+## **Initial Stage: Background and Objective**
 
 Olist is one of the largest department store in Brazilian marketplaces. Olist connects small businesses from all over Brazil to channels without hassle and with a single contract. The merchants are able to sell their products through the Olist Store and ship them directly to the customers using Olist logistics partners.
 
@@ -20,29 +20,156 @@ This business analysis personal project was done to help Olist identify many imp
 2. Annual Average Order Value
 3. Annual Customer Lifetime Value
 
-## *Stage 1: Data Preparation*
+## **Stage 1: Data Preparation**
 
 The Olist E-Commerce dataset has 99441 rows containing order information from 2016 to 2018. Additional information such as product, customer, payment type, and review are contained in separate tables.
 
-### *Create Database and ERD*
+### **Create Database and ERD**
 The steps to create Database and ERD contains as follows:
 1. Create database and table using 'CREATE TABLE' function on pgAdmin
 2. Import csv data to each table in database
 3. Assign Primary Key and Foreign Key using 'ALTER TABLE' function
 4. Generate ERD or Entity Relationship Diagram
 
-Click to see query:
-[QUERY]		
+<details>
+  <summary>Click to see query:</summary>
 
-ERD Result:
-ERD]
+  ```sql
+--- CREATE TABLE QUERY ---
+
+CREATE TABLE customers (
+customer_id VARCHAR,
+customer_unique_id VARCHAR,
+customer_zip_code_prefix VARCHAR,
+customer_city VARCHAR,
+customer_state VARCHAR
+);
+
+CREATE TABLE order_items (
+order_id VARCHAR, 
+order_item_id INT,
+product_id VARCHAR,
+seller_id VARCHAR,
+shipping_limit_date TIMESTAMP,
+price DECIMAL,
+freight_value DECIMAL
+);
+
+CREATE TABLE order_payments (
+order_id VARCHAR,
+payment_sequential INT,
+payment_type VARCHAR,
+payment_installments INT,
+payment_value DECIMAL
+);
+
+CREATE TABLE order_reviews (
+review_id VARCHAR,
+order_id VARCHAR,
+reviews_score INT,
+review_comment_title VARCHAR ,
+review_comment_message VARCHAR,
+review_creation_date TIMESTAMP,
+review_answer_timestamp TIMESTAMP
+);
+
+CREATE TABLE orders (
+order_id VARCHAR,
+customer_id VARCHAR,
+order_status VARCHAR,
+order_purchase_timestamp TIMESTAMP,
+order_approved_at TIMESTAMP,
+order_delivered_carrier_date TIMESTAMP,
+order_delivered_customer_date TIMESTAMP,
+order_estimated_delivery_date TIMESTAMP
+);
+
+CREATE TABLE products (
+product_id VARCHAR,
+product_category_name VARCHAR,
+product_name_lenght INT,
+product_description_lenght INT,
+product_photos_qty INT,
+product_weight_g INT,
+product_length_cm INT,
+product_height_cm INT,
+product_width_cm INT
+);
+
+CREATE TABLE sellers (
+seller_id VARCHAR ,
+seller_zip_code_prefix VARCHAR,
+seller_city VARCHAR,
+seller_state VARCHAR
+);
+
+CREATE TABLE product_category_name_translation (
+product_category_name VARCHAR,
+product_category_name_english VARCHAR
+);
+
+
+--- ASSIGN PRIMARY KEY & FOREIGN KEY ---
+--- Primary Key
+ALTER TABLE customers
+ADD CONSTRAINT customers_pk 
+PRIMARY KEY(customer_id);
+
+ALTER TABLE orders
+ADD CONSTRAINT orders_pk
+PRIMARY KEY (order_id);
+
+ALTER TABLE products
+ADD CONSTRAINT products_pk
+PRIMARY KEY (product_id);
+
+ALTER TABLE sellers
+ADD CONSTRAINT sellers_pk
+PRIMARY KEY (seller_id);
+
+--- Foreign Key
+ALTER TABLE order_items
+ADD FOREIGN KEY (order_id)
+REFERENCES orders;
+
+ALTER TABLE order_items
+ADD FOREIGN KEY (product_id)
+REFERENCES products;
+
+ALTER TABLE order_items
+ADD FOREIGN KEY (seller_id)
+REFERENCES sellers;
+
+ALTER TABLE order_payments
+ADD FOREIGN KEY (order_id)
+REFERENCES orders;
+
+ALTER TABLE order_reviews
+ADD FOREIGN KEY (order_id)
+REFERENCES orders;
+
+ALTER TABLE orders
+ADD FOREIGN KEY (customer_id)
+REFERENCES customers;
+
+  ```
+</details>
+
+**ERD Result:**<br>
+
+<p align="center">
+  <kbd><img src="Asset/0.%20ERD.jpeg" width=800px> </kbd> <br>
 
 Picture 1. Entity Relationship Diagram
+</p>
+<br>
+<br>
 
+---
 
-## *Stage 2: Data Analysis*
+## **Stage 2: Data Analysis**
 
-### *1. Annual Revenue and Cancelled Orders* 
+### **1. Annual Revenue and Cancelled Orders** 
 
 E-Commerce main business metrics consist of Revenue and Cancelled Orders. The insight that are provided are as follows:
 
