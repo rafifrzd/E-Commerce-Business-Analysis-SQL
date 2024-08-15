@@ -175,15 +175,50 @@ E-Commerce main business metrics consist of Revenue and Cancelled Orders. The in
 Revenue: Annual Revenue & Top 3 Most Sold Products
 Cancelled Orders: Annual Cancelled Order & Order Cancellation Reasons
 
-Click to see query:
-[QUERY]	
+<details>
+  <summary>Click to see query:</summary>
 
-Table 1. Annual Revenue
-[TABEL]
+  ```sql
+--- YEARLY ORDER AND REVENUE ---
 
-[VIZ]
-Picture 2. Annual Revenue Graph 
+WITH yearly_rev_table AS (
+--- Menggabungkan tabel orders, order_items, dan products untuk mendapatkan keterangan waktu order, status, dan revenue
+SELECT 
+o.order_id, o.order_status, EXTRACT(YEAR FROM o.order_purchase_timestamp) AS order_year, 
+oi.product_id, pr.product_category_name, oi.price
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+LEFT JOIN products pr ON pr.product_id = oi.product_id
 
+--- Filter hanya order yang diproses
+WHERE order_status NOT IN ('unavailable', 'canceled')
+)
+
+--- Memunculkan tabel akhir Yearly Quantity Sold dan Revenue
+SELECT order_year,
+
+--- Menghitung total quantity sold dan total revenue per tahun
+COUNT(product_id) as quantity_sold, SUM(price) AS total_revenue
+
+FROM yearly_rev_table
+GROUP BY order_year
+ORDER BY order_year ASC
+;
+```
+</details>
+
+<p align="center">
+**Table 1. Annual Revenue**
+  <kbd><img src="Asset/1.%20Revenue%20by%20Year.jpeg" width=800px> </kbd> <br>
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/1.%20Revenue%20by%20Year%20-%20V.png" width=600px> </kbd> <br>
+  Picture 2. Annual Revenue Graph
+</p>
+
+<br>
 Overall, Olist revenue was increasing from 2016 to 2018. There is a significant increase from 2016 to 2017 because of 2016 transaction data started from September.
 
 Click to see query:
