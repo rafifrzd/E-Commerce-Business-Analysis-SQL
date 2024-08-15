@@ -1,11 +1,15 @@
-**E-Commerce Business Analysis using SQL**
+# **E-Commerce Business Analysis using SQL**
 
-*Tools*: PostgreSQL
-*Visualization*: Microsoft Excel
-*Dataset*: Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv)
+*Tools*: PostgreSQL <br>
+*Visualization*: Microsoft Excel <br>
+*Dataset*: Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) 
+<br>
+<br>
+<br>
 
+---
 
--- Initial Stage: Background and Objective
+## *Initial Stage: Background and Objective*
 
 Olist is one of the largest department store in Brazilian marketplaces. Olist connects small businesses from all over Brazil to channels without hassle and with a single contract. The merchants are able to sell their products through the Olist Store and ship them directly to the customers using Olist logistics partners.
 
@@ -16,11 +20,11 @@ This business analysis personal project was done to help Olist identify many imp
 2. Annual Average Order Value
 3. Annual Customer Lifetime Value
 
---- Stage 1: Data Preparation
+## *Stage 1: Data Preparation*
 
 The Olist E-Commerce dataset has 99441 rows containing order information from 2016 to 2018. Additional information such as product, customer, payment type, and review are contained in separate tables.
 
-Create Database and ERD
+### *Create Database and ERD*
 The steps to create Database and ERD contains as follows:
 1. Create database and table using 'CREATE TABLE' function on pgAdmin
 2. Import csv data to each table in database
@@ -36,9 +40,9 @@ ERD]
 Picture 1. Entity Relationship Diagram
 
 
--- Stage 2: Data Analysis
+## *Stage 2: Data Analysis*
 
-1. Annual Revenue and Cancelled Orders
+### *1. Annual Revenue and Cancelled Orders* 
 
 E-Commerce main business metrics consist of Revenue and Cancelled Orders. The insight that are provided are as follows:
 
