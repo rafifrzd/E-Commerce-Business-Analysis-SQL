@@ -219,20 +219,83 @@ ORDER BY order_year ASC
 </p>
 
 <br>
+
 Overall, Olist revenue was increasing from 2016 to 2018. There is a significant increase from 2016 to 2017 because of 2016 transaction data started from September.
 
-Click to see query:
-[QUERY]
+<br>
 
-Table 2. Top 3 Products by Year
-[TABEL]
+<details>
+  <summary>Click to see query:</summary>
 
-[VIZ]
-Picture 3. Top 3 Products by Year Graph 
+  ```sql
+--- TOP 3 PRODUCTS SOLD YEARLY (BY QUANTITY AND GMV) ---
+
+WITH orders_with_products AS (
+--- Menggabungkan tabel orders, order_items, dan products untuk mendapatkan keterangan waktu order, status, dan revenue
+SELECT 
+o.order_id, o.order_status, EXTRACT(YEAR FROM o.order_purchase_timestamp) AS order_year, 
+oi.product_id, pr.product_category_name, oi.price
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+LEFT JOIN products pr ON pr.product_id = oi.product_id
+LEFT JOIN product_category_name_translation prt ON pr.product_category_name = prt.product_category_name_english
+	
+-- Filter hanya order yang diproses
+WHERE order_status NOT IN ('unavailable', 'canceled')
+),
+
+product_total_order_and_revenue AS (
+--- Memunculkan tabel tahun order, nama produk, total produk terjual, total revenue dan ranking revenue
+SELECT 
+order_year, product_category_name AS product_name, 
+	
+--- Menghitung total produk terjual dan total revenue
+COUNT(product_id) AS total_products_sold, SUM(price) AS total_revenue,
+	
+--- Memberikan ranking revenue menggunakan function row_number dan Partition By dengan tujuan agar dapat memfilter berdasarkan ranking tertentu saja  
+ROW_NUMBER() OVER(PARTITION BY order_year ORDER BY SUM(price) DESC) AS revenue_rank
+
+FROM orders_with_products
+GROUP BY order_year, product_name
+),
+
+product_total_order_and_revenue_final AS (
+--- Menggabungkan tabel akhir dengan terjemahan nama product category name
+SELECT 
+por.order_year, por.product_name, pt.product_category_name_english AS product, 
+por.total_products_sold, por.total_revenue, por.revenue_rank
+FROM product_total_order_and_revenue por
+LEFT JOIN product_category_name_translation pt ON pt.product_category_name = por.product_name
+)
+
+--- Memunculkan tabel akhir
+SELECT order_year, product, total_products_sold, total_revenue
+FROM product_total_order_and_revenue_final
+
+--- Filter hanya Top 3 Produk yang terjual pada masing-masing tahung
+WHERE revenue_rank BETWEEN 1 AND 3
+;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/2.%20Top%203%20Products%20by%20Year.jpeg" width=600px> </kbd> <br>
+  Table 2. Top 3 Products by Year
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/2.%20Top%203%20Products%20by%20Year%20-%20V.png" width=600px> </kbd> <br>
+  Picture 3. Top 3 Products by Year Graph 
+</p>
+
+<br>
 
 In 2017 and 2018, the top 3 most sold products are consistently Health Beauty, Bed Bath Table, and Watches Gifts. Meanwhile, Health Beauty consistently appears as top 3 products from 2016, even though 2016 transaction data starts from September. 
 
 This meant that in Olist, majority of people were looking for Health Beauty, Bed Bath Table, and Watches Gifts.
+
+<br>
 
 Click to see query:
 [QUERY]
