@@ -159,8 +159,7 @@ REFERENCES customers;
 
 <p align="center">
   <kbd><img src="Asset/0.%20ERD.jpeg" width=800px> </kbd> <br>
-
-Picture 1. Entity Relationship Diagram
+  Picture 1. Entity Relationship Diagram
 </p>
 <br>
 <br>
