@@ -4,7 +4,7 @@
 * **Visualization**: Microsoft Excel 
 * **Dataset**: Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) 
 <br>
-
+<br>
 ---
 
 ## **Initial Stage: Background and Objective**
@@ -711,6 +711,9 @@ FROM cltv_final;
 In 2016, Customer Lifetime Value was much lower than 2017 and 2018 because transaction data started in September. From 2017 to 2018, Customer Lifetime Value was decreased significantly. Based on Customer Lifetime Value in 2018, Olist business maximum spending to acquire and retain customers is 31,38.
 
 To increase Customer Lifetime Value, several things can be done, such as: Optimizing and offering bundling scheme, create loyalty program, build relationship with customers from events or personalized email marketing, and provide reasonable discounts.
+
+<br>
+<br>
 
 ---
 
