@@ -455,53 +455,268 @@ From 2017 to 2018, cancellation because of Courier/Third Party Logistics increas
 
 <br>
 
-<br>
-
 ### **2. Annual Average Order Value**
 Average Order Value is defined as average amount spent each time a customer places an order. Average Order Value is calculated by dividing total revenue and total order.
 
-Click to see query:
-[QUERY]
+<br>
 
-Table 5. Average Order Value by Year
-[TABEL]
+<details>
+  <summary>Click to see query:</summary>
 
-[VIZ]
-Picture 6. Cancellation Reason by Year Graph
+  ```sql
+--- Average Order Value Query ---
+
+WITH aov_temp AS (
+--- Menggabungkan tabel Order dan tabel Order Item untuk mendapatkan keterangan order dan harga per produk
+SELECT o.order_id AS order_id, o.order_status AS order_status, o.order_purchase_timestamp AS order_date, oi.price AS order_price
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+WHERE o.order_status NOT IN ('canceled', 'unavailable')
+),
+
+aov_final AS (
+--- Ekstraksi keterangan tahun pada order_date untuk dihitung per tahun
+SELECT EXTRACT(YEAR FROM order_date) AS order_year,
+
+--- Menghitung jumlah total order dan total revenue
+COUNT(DISTINCT order_id) AS total_order,
+SUM(order_price) AS total_order_value,
+	
+--- Menghitung Average Order Value
+(SUM(order_price)/COUNT(DISTINCT order_id)) AS average_order_value
+FROM aov_temp
+GROUP BY EXTRACT(YEAR FROM order_date)
+ORDER BY EXTRACT(YEAR FROM order_date)
+)
+
+--- Memunculkan tabel akhir dan memunculkan Total Order Value dan Average Order Value menjadi 2 angka dibelakang koma
+SELECT order_year, total_order, 
+ROUND(total_order_value, 2) as total_order_value,
+ROUND(average_order_value, 2) as average_order_value
+FROM aov_final
+;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/5.%20Average%20Order%20Value%20by%20Year.jpeg" width=600px> </kbd> <br>
+  Table 5. Average Order Value by Year
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/5.%20Average%20Order%20Value%20by%20Year%20-%20V.png" width=600px> </kbd> <br>
+  Picture 6. Average Order Value by Year Graph
+</p>
+
+<br>
 
 From 2016 to 2017, Average Order Value decreased significantly. This was caused by a lower number of orders in 2016, which attributed from the fact that data in 2016 started in September.
 
 Meanwhile, 2017 to 2018 shows a decrease in Average Order Value despite higher number of order, which was caused by revenue that didn't increase proporsionally with order increase.
 
-Click to see query:
-[QUERY]
+<br>
 
-Table 6. Top 10 Bundled Products
-[TABEL]
+<details>
+  <summary>Click to see query:</summary>
 
-[VIZ]
-Picture 7. Top 10 Bundled Products Graph
+  ```sql
+--- Bundling Recommendation Query ---
+
+WITH aov_bdl_i AS (
+--- Membuat tabel keseluruhan berisi keterangan order_id, waktu, status, produk, dan harga produk
+SELECT
+o.order_id AS order_id, 
+o.order_purchase_timestamp AS purchase_date, 
+o.order_status AS order_status,
+oi.product_id AS product_id, pd.product_category_name AS product_name, oi.price AS order_value
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+LEFT JOIN products pd ON pd.product_id = oi.product_id
+
+--- Filter order yang terkonfirmasi dan keterangan kategori produk tidak null
+WHERE o.order_status NOT IN ('unavailable', 'canceled') AND pd.product_category_name IS NOT null
+),
+
+aov_bdl_t2 AS (
+--- Membuat tabel baru order_id, produk terjual, dan jumlah total barang dalam 1 order 
+SELECT
+order_id,
+product_name,
+
+--- Query jumlah total barang yang dibeli dalam satu order_id menggunakan Partition By 
+COUNT(order_id) OVER(PARTITION BY order_id) AS total_item
+FROM aov_bdl_i
+),
+
+aov_bdl_t3 AS ( 
+--- Membuat tabel baru order_id dan menghitung jumlah produk unik dalam satu order
+SELECT order_id, COUNT(DISTINCT product_name) AS total_distinct_item
+FROM aov_bdl_t2
+GROUP BY order_id
+),
+
+aov_bdl_t4 AS (
+--- Menggabungkan tabel jumlah total  barang dalam 1 order dan tabel perhitungan jumlah produk unik dalam satu order
+SELECT abt2.order_id AS order_id, abt2.product_name AS product_name_pt, pt.product_category_name_english AS product_name, 
+abt2.total_item AS total_item, abt3.total_distinct_item AS total_distinct_item
+FROM aov_bdl_t2 abt2
+LEFT JOIN aov_bdl_t3 abt3 ON abt3.order_id = abt2.order_id
+	
+--- Menggabungkan tabel dengan translasi nama produk
+LEFT JOIN product_category_name_translation pt ON pt.product_category_name = abt2.product_name
+	
+--- Filter order bundling, dengan kondisi jumlah total barang dan jumlah produk unik lebih dari 1
+WHERE total_item > 1 AND total_distinct_item > 1
+ORDER BY order_id ASC, product_name asc
+),
+
+aov_bdl_ft AS (
+--- Menggabungkan dua/lebih row produk menjadi 1 row produk berdasarkan order_id
+SELECT order_id, ARRAY_AGG(product_name) AS distinct_combined_products FROM aov_bdl_t4 GROUP BY order_id
+)
+
+--- Memunculkan tabel akhir dan menghitung total order produk yang dibundling untuk dijadikan rekomendasi
+SELECT distinct_combined_products, COUNT(distinct_combined_products) AS total_combined_orders
+FROM aov_bdl_ft
+GROUP BY distinct_combined_products
+ORDER BY total_combined_orders DESC, distinct_combined_products ASC
+
+--- Memunculkan hanya Top 10
+LIMIT 10
+;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/6.%20Top%2010%20Bundled%20Products.jpeg" width=600px> </kbd> <br>
+  Table 6. Top 10 Bundled Products
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/6.%20Top%2010%20Bundled%20Products%20-%20V.png" width=600px> </kbd> <br>
+  Picture 7. Top 10 Bundled Products Graph
+</p>
+
+<br>
 
 Top 10 Bundled Products was created to help Olist increase Average Order Value from product bundling recommendations. Top 3 most bundled products were a combination of home furnitures and living products (bed bath table + furniture decor, furniture decor + housewares). Meanwhile, baby products are mostly combined with toys and/or bed bath table, and Health Beauty products are most commonly purchased with sports leisure and perfumery products.
 
-3. Annual Customer Lifetime Value
+### **3. Annual Customer Lifetime Value**
 
 Customer Lifetime Value (CLV) helps business to find out how much can a business spend to acquire and retain each customer. Ideally, acquisition cost for new customer should be one third of CLV.
 
-Click to see query:
-[QUERY]
+<br>
 
-Table 7. Annual Customer Lifetime Value
-[TABEL]
+<details>
+  <summary>Click to see query:</summary>
 
-[VIZ]
-Picture 8. Annual Customer Lifetime Value Graph
+  ```sql
+-- Customer Lifetime Value ---
+
+WITH cltv_a_table AS (
+--- Menggabungkan tabel orders, customers, dan order_items untuk mendapatkan keterangan order, customer, dan harga produk
+    SELECT
+        o.order_id, 
+        o.order_status, 
+        o.customer_id, 
+        cu.customer_unique_id, 
+        oi.product_id, 
+        oi.price, 
+        o.order_purchase_timestamp,
+	
+--- Mengekstraksi tahun dari kolom order_purchase_timestamp
+        EXTRACT(year FROM order_purchase_timestamp) AS order_year
+
+    FROM orders o
+    LEFT JOIN customers cu ON cu.customer_id = o.customer_id
+    LEFT JOIN order_items oi ON oi.order_id = o.order_id
+	
+--- Filter order yang tidak cancel
+    WHERE order_status NOT IN ('unavailable', 'canceled')
+),
+
+cltv_init_1 AS (
+--- Membuat tabel untuk menghitung average order value dan average customer lifespan
+    SELECT 
+        order_year, 
+        SUM(price) AS total_revenue, 
+        CAST(COUNT(DISTINCT order_id) AS DECIMAL) AS total_order,
+        CAST(COUNT(DISTINCT customer_unique_id) AS DECIMAL) AS total_customer,
+	
+--- Menghitung average order value
+        (SUM(price)/COUNT(DISTINCT order_id)) AS average_order_value,
+	
+--- Menghitung average customer lifespan
+        ((EXTRACT(day FROM (MIN(order_purchase_timestamp) - MAX(order_purchase_timestamp)))) * (-1.0)) AS average_customer_lifespan
+    
+	FROM cltv_a_table
+    GROUP BY order_year
+),
+
+cltv_init_2 AS (
+--- Membuat tabel untuk menghitung average order frequency dan average customer value
+    SELECT 
+        order_year, 
+        total_revenue, 
+        total_order, 
+        total_customer,
+        ROUND(average_order_value, 2) AS average_order_value, 
+	
+--- Menghitung average order frequency
+        (total_order/total_customer) AS average_order_frequency,
+	
+--- Menghitung average customer value
+        (average_order_value * (total_order/total_customer)) AS average_customer_value,
+	
+        (average_customer_lifespan/365) AS average_customer_lifespan
+    FROM cltv_init_1
+),
+
+cltv_final AS (
+--- Membuat tabel akhir untuk menghitung customer lifetime value
+	SELECT 
+        order_year, 
+        total_revenue, 
+        total_order, 
+        total_customer,
+        average_order_value, 
+        ROUND(average_order_frequency, 2) AS average_order_frequency, 
+        ROUND(average_customer_value, 2) AS average_customer_value, 
+        ROUND(average_customer_lifespan, 2) AS average_customer_lifespan,
+	
+--- Menghitung customer lifetime value
+        ROUND((average_customer_lifespan * average_customer_value), 2) AS customer_lifetime_value
+    FROM cltv_init_2
+)
+
+--- Memunculkan tabel akhir
+SELECT	order_year, customer_lifetime_value
+FROM cltv_final;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/7.%20Customer%20Lifetime%20Value.jpeg" width=600px> </kbd> <br>
+  Table 7. Annual Customer Lifetime Value
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/7.%20Customer%20Lifetime%20Value%20-%20V.png" width=600px> </kbd> <br>
+  Picture 8. Annual Customer Lifetime Value Graph
+</p>
+
+<br>
 
 In 2016, Customer Lifetime Value was much lower than 2017 and 2018 because transaction data started in September. From 2017 to 2018, Customer Lifetime Value was decreased significantly. Based on Customer Lifetime Value in 2018, Olist business maximum spending to acquire and retain customers is 31,38.
 
 To increase Customer Lifetime Value, several things can be done, such as: Optimizing and offering bundling scheme, create loyalty program, build relationship with customers from events or personalized email marketing, and provide reasonable discounts.
 
---- Stage 3: Summary
+---
+
+## **Stage 3: Summary**
 
 * From Annual Revenue analysis, it is concluded that Olist revenue were increasing from 2016 to 2018, with top selling products including Health Beauty, Bed Bath Table, and Watches Gifts. Olist can potentially increase revenue and awareness by creating relevant campaign theme related to the category of top selling products (example: Beauty is You, etc).
 * Cancelled Order analysis reveals that most order are cancelled because of cancellation by customer and courier issue. Olist need to adress high cancellation by customers by deep diving into other data (click-through rate, etc.), and implement penalty system for couriers with order cancelled.
