@@ -14,7 +14,7 @@ Olist is one of the largest department store in Brazilian marketplaces. Olist co
 
 The dataset was provided by Olist, which contains real-life data and information of 100k orders from 2016 to 2018 made at multiple marketplaces in Brazil. Its features The data contains multiple dimensions: from order status, price, payment and freight performance to customer location, product attributes and reviews written by customers.
 
-This business analysis personal project was done to help Olist identify many important metrics in E-Commerce. The objectives of this project is to gain insight from visualization of:
+This business analysis personal project was done to help Olist explore important business metrics in E-Commerce. The objectives of this project is to gain insight from visualization of:
 1. Annual Revenue and Cancelled Order
 2. Annual Average Order Value
 3. Annual Customer Lifetime Value
