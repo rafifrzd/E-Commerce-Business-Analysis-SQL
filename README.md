@@ -208,7 +208,7 @@ ORDER BY order_year ASC
 </details>
 
 <p align="center">
-**Table 1. Annual Revenue**
+  Table 1. Annual Revenue
   <kbd><img src="Asset/1.%20Revenue%20by%20Year.jpeg" width=800px> </kbd> <br>
 </p>
 
