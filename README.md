@@ -171,6 +171,7 @@ REFERENCES customers;
 ### **1. Annual Revenue and Cancelled Orders** 
 
 E-Commerce main business metrics consist of Revenue and Cancelled Orders. The insight that are provided are as follows: <br>
+<br>
 **Revenue**: Annual Revenue & Top 3 Most Sold Products <br>
 **Cancelled Orders**: Annual Cancelled Order & Order Cancellation Reasons <br>
 
