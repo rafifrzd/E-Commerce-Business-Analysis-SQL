@@ -720,8 +720,8 @@ To increase Customer Lifetime Value, several things can be done, such as: Optimi
 
 ## **Stage 3: Summary**
 
-* From Annual Revenue analysis, it is concluded that Olist revenue were increasing from 2016 to 2018, with top selling products including Health Beauty, Bed Bath Table, and Watches Gifts. Olist can potentially increase revenue and awareness by creating relevant campaign theme related to the category of top selling products (example: Beauty is You, etc).
-* Cancelled Order analysis reveals that most order are cancelled because of cancellation by customer and courier issue. Olist need to adress high cancellation by customers by deep diving into other data (click-through rate, etc.), and implement penalty system for couriers with order cancelled.
-* From Annual Average Order Value analysis, average order value continued to decrease. To increase Average Order Value, Olist can implement bundling scheme for top bundled products (Bed Bath Table + Furniture Decor, Baby + Toys, Health Beauty + Perfumery, etc).
-* Customer Lifetime Value decreases from 2017 to 2018. Relevant things to increase CLV include offering bundling scheme, create relationship-building activities, and provide discounts.
+* From Annual Revenue analysis, it is concluded that **Olist revenue were increasing from 2016 to 2018, with top selling products including Health Beauty, Bed Bath Table, and Watches Gifts**. Olist can potentially **increase revenue and awareness by creating relevant campaign theme** related to the category of top selling products (example: Beauty is You, etc).
+* Cancelled Order analysis reveals that **most order are cancelled because of cancellation by customer and courier issue**. Olist need to adress high cancellation by customers by deep diving into other data (click-through rate, etc.), and **implement penalty system for couriers with order cancelled**.
+* From Annual Average Order Value analysis, **average order value continued to decrease**. To increase Average Order Value, Olist can **implement bundling scheme for top bundled products (Bed Bath Table + Furniture Decor, Baby + Toys, Health Beauty + Perfumery, etc)**.
+* **Customer Lifetime Value decreases from 2017 to 2018**. Relevant things to increase CLV include offering bundling scheme, create relationship-building activities, and provide discounts.
 
