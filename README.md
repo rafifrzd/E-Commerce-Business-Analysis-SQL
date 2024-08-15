@@ -12,7 +12,7 @@
 
 Olist is one of the largest department store in Brazilian marketplaces. Olist connects small businesses from all over Brazil to channels without hassle and with a single contract. The merchants are able to sell their products through the Olist Store and ship them directly to the customers using Olist logistics partners.
 
-The dataset was provided by Olist, which contains real-life data and information of 100k orders from 2016 to 2018 made at multiple marketplaces in Brazil. Its features The data contains multiple dimensions: from order status, price, payment and freight performance to customer location, product attributes and reviews written by customers.
+The dataset was provided by Olist, which contains real-life data and information of 100k orders from 2016 to 2018 made at multiple marketplaces in Brazil. The data contains multiple dimensions: from order status, price, payment and freight performance to customer location, product attributes and reviews written by customers.
 
 This business analysis personal project was done to help Olist explore important business metrics in E-Commerce. The objectives of this project is to gain insight from visualization of:
 1. Annual Revenue and Cancelled Order
