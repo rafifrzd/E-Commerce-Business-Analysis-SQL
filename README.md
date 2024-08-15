@@ -297,33 +297,167 @@ This meant that in Olist, majority of people were looking for Health Beauty, Bed
 
 <br>
 
-Click to see query:
-[QUERY]
+<details>
+  <summary>Click to see query:</summary>
 
-Table 3. Cancelled Order by Year
-[TABEL]
+  ```sql
+--- YEARLY CANCELLED ORDER ---
 
-[VIZ]
-Picture 4. Cancelled Order by Year Graph 
+WITH canceled_order AS (
+--- Menggabungkan tabel orders, order_items, dan products untuk mendapatkan keterangan waktu order, status, dan revenue yang canceled
+SELECT 
+o.order_id, o.order_status, EXTRACT(YEAR FROM o.order_purchase_timestamp) AS order_year, 
+oi.product_id, pr.product_category_name, oi.price
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+LEFT JOIN products pr ON pr.product_id = oi.product_id
+WHERE order_status = 'canceled'
+)
+
+--- Memunculkan tabel akhir
+SELECT order_year, 
+
+--- Menghitung total order cancelled dan total revenue yang hilang
+COUNT(DISTINCT order_id) AS total_order_cancelled,
+
+SUM(price) AS total_revenue
+FROM canceled_order
+GROUP BY order_year
+ORDER BY order_year
+;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/3.%20Cancelled%20Orders%20by%20Year.jpeg" width=600px> </kbd> <br>
+  Table 3. Cancelled Order by Year
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/3.%20Cancelled%20Orders%20by%20Year%20-%20V.png" width=600px> </kbd> <br>
+  Picture 4. Cancelled Order by Year Graph  
+</p>
+
+<br>
 
 From 2016 to 2017, there is an increase in number of cancelled orders, but the number of revenue lost (total revenue) decreased. This indicated that Average Order Value (Revenue/Order) for cancelled orders decreased, and there may be a decrease in overall Average Order Value. 
 
 To find out why the order was cancelled, a table containing cancellation reasons was created.
 
-Click to see query:
-[QUERY]
+<br>
 
-Table 4. Cancellation Reason by Year
-[TABEL]
+<details>
+  <summary>Click to see query:</summary>
 
-[VIZ]
-Picture 5. Cancellation Reason by Year Graph
+  ```sql
+--- Cancellation Reasons ---
+
+WITH otdc1 AS (
+--- Menggabungkan tabel orders dan order_items untuk mendapatkan detail waktu, status, dan batas tanggal pengiriman
+SELECT
+o.order_id, o.order_status, o.order_purchase_timestamp, 
+oi.shipping_limit_date, o.order_delivered_carrier_date AS delivered_actual, 
+	
+--- Menghitung perbedaan batas penerimaan di pihak kurir dan tanggal penerimaan di kurir. 
+(oi.shipping_limit_date - o.order_delivered_carrier_date) AS delivered_difference,
+
+o.order_estimated_delivery_date AS estimated_arrival, o.order_delivered_customer_date AS actual_arrival,
+
+--- Menghitung perbedaan batas pengiriman ke customer dan tanggal pengiriman ke customer.
+(o.order_estimated_delivery_date - o.order_delivered_customer_date) AS arrival_difference
+FROM orders o
+LEFT JOIN order_items oi ON oi.order_id = o.order_id
+
+--- Filter hanya order yang telah canceled	
+WHERE order_status = 'canceled'
+),
+
+otdc2 AS (
+--- Membuat tabel sebelumnya dengan kolom tambahan untuk melihat penyebab order canceled 
+SELECT
+order_id, order_status, order_purchase_timestamp, 
+shipping_limit_date, delivered_actual, delivered_difference,
+estimated_arrival, actual_arrival, arrival_difference,
+	
+--- Membuat kolom penyebab 1 berdasarkan perbedaan penerimaan di pihak kurir: 
+--- Jika perbedaan > 0, maka order dicancel setelah Delivery. 
+--- Jika nilai perbedaan NULL, maka order dicancel sebelum Delivery. 
+--- Jika perbedaan < 0, maka kemungkinan cancel karena masalah Fulfilment/Product.
+			CASE WHEN delivered_difference > '0' THEN 'After Delivery'
+					WHEN delivered_difference IS NULL THEN 'Before Delivery'
+					ELSE 'Fulfilment/Product Issue'
+			END AS cancelation_reason_1,
+	
+--- Membuat kolom penyebab 2 berdasarkan perbedaan pengiriman ke customer: 
+--- Jika perbedaan < 0, maka order dicancel karena masalah Fulfilment, karena pengiriman ke customer melebihi batas pengiriman.
+--- Jika perbedaan > 0, maka order dicancel karena masalah Product.
+			CASE WHEN arrival_difference < '0' THEN 'Fulfilment'
+					WHEN arrival_difference > '0' THEN 'Product'
+			END AS cancelation_reason_2,
+	
+--- Membuat kolom penyebab 3 berdasarkan kolom penyebab 1 dan 2:
+--- Jika perbedaan delivered_difference < 0 dan perbedaan arrival_difference = null, maka order dicancel karena kesalahan Seller dan Courier (kurir).
+--- Jika perbedaan delivered_difference > 0 dan perbedaan arrival_difference = null, maka order dicancel karena kesalahan kurir.
+--- Jika tidak ada perbedaan pada delivered_difference arrival_difference, maka order dicancel customer karena tidak ada pengiriman ke kurir.
+			CASE WHEN (delivered_difference < '0' AND arrival_difference IS null) THEN 'Seller & Courier Fault'
+					WHEN (delivered_difference > '0' AND arrival_difference IS null) THEN 'Courier'
+					WHEN (delivered_difference IS null AND arrival_difference IS null) THEN 'Cancel by Customer'
+					ELSE null
+			END AS cancelation_reason_3
+FROM otdc1
+),
+
+cancel_orders_and_reason_final AS (
+--- Mengekstraksi tahun dari order_purchase_timestamp
+SELECT
+order_id, order_status, order_purchase_timestamp, EXTRACT(YEAR FROM order_purchase_timestamp) AS order_year,
+shipping_limit_date, delivered_actual, delivered_difference,
+estimated_arrival, actual_arrival, arrival_difference,
+cancelation_reason_1, cancelation_reason_2, cancelation_reason_3,
+	
+--- Menggabungkan ketiga kolom penyebab cancel untuk mengetahui penyebab spesifik order dicancel
+CONCAT(cancelation_reason_1, ' ', '-', ' ', cancelation_reason_2, ' ', '-', ' ', cancelation_reason_3) AS cancel_reason
+FROM otdc2
+)
+
+--- Memunculkan tabel akhir
+SELECT
+order_year,
+cancel_reason AS reason_of_cancellation,
+
+--- Menghitung jumlah order yang dicancel
+COUNT(order_id) AS total_order_cancelled
+
+FROM cancel_orders_and_reason_final
+GROUP BY order_year, cancel_reason
+ORDER BY order_year ASC, total_order_cancelled DESC
+;
+```
+</details>
+
+<p align="center">
+  <kbd><img src="Asset/4.%20Cancellation%20Reasons.jpeg" width=600px> </kbd> <br>
+  Table 4. Cancellation Reason by Year
+</p>
+
+<br>
+<p align="center">
+  <kbd><img src="Asset/4.%20Cancellation%20Reasons%20-%20V.png" width=600px> </kbd> <br>
+  Picture 5. Cancellation Reason by Year Graph  
+</p>
+
+<br>
 
 From 2016 to 2018, cancellation by customers was the most common reason for cancelled orders. This was caused by either customer tendency to look at cheaper products in another E-Commerce platform/sellers or difficulty in payment procedure.
 
 From 2017 to 2018, cancellation because of Courier/Third Party Logistics increased significantly. For the next year onwards, Olist needs to implement a new system to penalize the Third Party Logistics for cancelled orders in order to decrease order cancellation.
 
-2. Annual Average Order Value
+<br>
+
+<br>
+
+### **2. Annual Average Order Value**
 Average Order Value is defined as average amount spent each time a customer places an order. Average Order Value is calculated by dividing total revenue and total order.
 
 Click to see query:
