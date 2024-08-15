@@ -1,8 +1,8 @@
 # **E-Commerce Business Analysis using SQL**
 
-*Tools*: PostgreSQL <br>
-*Visualization*: Microsoft Excel <br>
-*Dataset*: Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) 
+**Tools**: PostgreSQL <br>
+**Visualization**: Microsoft Excel <br>
+**Dataset**: Kaggle (https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce?select=olist_order_items_dataset.csv) 
 <br>
 <br>
 <br>
